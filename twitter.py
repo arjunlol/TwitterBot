@@ -11,6 +11,30 @@ def authorize_account(consumer_key = consumer_key, consumer_secret = consumer_se
   auth.set_access_token(access_key, access_secret)
   return tweepy.API(auth)
 
-if __name__ == '__main__':
-  twitter_account = authorize_account()
-  twitter_account.update_status('TEST')
+def read_messages(twitter_account, since = 0):
+  mentions = tweepy.Cursor(twitter_account.mentions_timeline, since_id = str(since)).items()
+  tweets = []
+
+  for tweet in tweets:
+    tweets.append(tweet.text)
+    if (tweet.id > since):
+      since = tweet.id
+
+  return {"messages": tweets, "since_id": since}
+
+if __name__ == "__main__":
+
+    twitter_account = authorize_account()
+    since = 1
+
+    while(True):
+        #read all mentions since we last checked
+        tweets = read_messages(twitter_account, since)
+        since = tweets['since_id']
+
+        #iterate through messages, updating status
+        for message in tweets['messages']:
+            twitter_account.update_status(message[::-1])
+
+        #sleep 15 minutes and check again
+        time.sleep(60 * 15)
